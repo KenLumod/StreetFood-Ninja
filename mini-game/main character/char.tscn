@@ -1,0 +1,325 @@
+[gd_scene load_steps=38 format=3 uid="uid://celqtmxhxwynj"]
+
+[ext_resource type="Texture2D" uid="uid://dfceqa8s6peep" path="res://Character/Attack-01/Attack-01-Sheet.png" id="1_0ak7x"]
+[ext_resource type="Texture2D" uid="uid://bakq6s6q8okom" path="res://Character/Idle/Idle-Sheet.png" id="1_5w8f8"]
+[ext_resource type="Texture2D" uid="uid://dg7jna5y7fqr7" path="res://Character/Jump-Start/Jump-Start-Sheet.png" id="2_vc4am"]
+[ext_resource type="Texture2D" uid="uid://ftv2h5ydhf6r" path="res://Character/Jump-End/Jump-End-Sheet.png" id="3_kpq55"]
+[ext_resource type="Texture2D" uid="uid://swxthuckrcnr" path="res://Character/Run/Run-Sheet.png" id="4_opval"]
+[ext_resource type="Script" path="res://main character/attack_area.gd" id="6_6set6"]
+
+[sub_resource type="GDScript" id="GDScript_jxch0"]
+script/source = "extends CharacterBody2D
+
+var speed = 300
+var jump_velocity = -1000  # Velocity for jumping
+var gravity = 1500        # Gravity force (adjust as needed)
+var isAttacking = false   # To prevent movement during attack animation
+var last_direction = 0    # Keeps track of the last movement direction (1 for right, -1 for left)
+
+func _process(delta):
+	# Apply gravity to velocity.y
+	if not is_on_floor():
+		velocity.y += gravity * delta
+
+	# Horizontal movement handling (only if not attacking)
+	var direction = 0
+	if not isAttacking:
+		if Input.is_action_pressed(\"ui_right\"):
+			direction = 1
+		elif Input.is_action_pressed(\"ui_left\"):
+			direction = -1
+
+		# Update velocity.x based on direction
+		velocity.x = direction * speed
+
+		# Update last_direction only when moving
+		if direction != 0:
+			last_direction = direction
+
+	# Flip the sprite based on the last known direction
+	$Sprite2D.flip_h = last_direction < 0
+
+	# Jumping handling (only if not attacking)
+	if Input.is_action_just_pressed(\"ui_accept\") and is_on_floor() and not isAttacking:
+		velocity.y = jump_velocity
+
+	# Update animations based on the character state
+	if isAttacking:
+		# Play attack animation if attacking
+		$Sprite2D.play(\"attacking\")
+	elif not is_on_floor():
+		# Play jumping animation if in the air
+		$Sprite2D.play(\"jumping\")
+	elif velocity.x != 0:
+		# Play running animation if moving
+		$Sprite2D.play(\"running\")
+	else:
+		# Play idle animation if not moving
+		$Sprite2D.play(\"default\")
+
+	# Attack handling
+	if Input.is_action_just_pressed(\"Attack\") and not isAttacking:
+		await handle_attack()
+
+	# Apply movement with collision handling
+	move_and_slide()
+
+# Function to handle the attack logic
+func handle_attack() -> void:
+	isAttacking = true
+	$AttackArea/CollisionShape2D.disabled = false  # Enable the attack area
+	$Sprite2D.play(\"attacking\")  # Play attack animation
+	# Wait for the animation duration before resetting the attack state
+	await get_tree().create_timer(0.5).timeout  # Adjust duration to match animation
+	$AttackArea/CollisionShape2D.disabled = true  # Disable the attack area
+	isAttacking = false
+"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7xld5"]
+atlas = ExtResource("1_0ak7x")
+region = Rect2(0, 0, 96, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_knfbi"]
+atlas = ExtResource("1_0ak7x")
+region = Rect2(96, 0, 96, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ahcd2"]
+atlas = ExtResource("1_0ak7x")
+region = Rect2(192, 0, 96, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p2s4c"]
+atlas = ExtResource("1_0ak7x")
+region = Rect2(288, 0, 96, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2x7ar"]
+atlas = ExtResource("1_0ak7x")
+region = Rect2(384, 0, 96, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ovdge"]
+atlas = ExtResource("1_0ak7x")
+region = Rect2(480, 0, 96, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c4try"]
+atlas = ExtResource("1_0ak7x")
+region = Rect2(576, 0, 96, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pxt5a"]
+atlas = ExtResource("1_0ak7x")
+region = Rect2(672, 0, 96, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_quxxr"]
+atlas = ExtResource("1_5w8f8")
+region = Rect2(0, 0, 64, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yt10x"]
+atlas = ExtResource("1_5w8f8")
+region = Rect2(64, 0, 64, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_80rjy"]
+atlas = ExtResource("1_5w8f8")
+region = Rect2(128, 0, 64, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6audn"]
+atlas = ExtResource("1_5w8f8")
+region = Rect2(192, 0, 64, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s85xy"]
+atlas = ExtResource("2_vc4am")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_urlns"]
+atlas = ExtResource("2_vc4am")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dqwvv"]
+atlas = ExtResource("2_vc4am")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ufstm"]
+atlas = ExtResource("2_vc4am")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_quxm7"]
+atlas = ExtResource("3_kpq55")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lhn3d"]
+atlas = ExtResource("3_kpq55")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o1ms3"]
+atlas = ExtResource("3_kpq55")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4fhld"]
+atlas = ExtResource("4_opval")
+region = Rect2(0, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l8noa"]
+atlas = ExtResource("4_opval")
+region = Rect2(80, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ehee4"]
+atlas = ExtResource("4_opval")
+region = Rect2(160, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c6tsv"]
+atlas = ExtResource("4_opval")
+region = Rect2(240, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0082h"]
+atlas = ExtResource("4_opval")
+region = Rect2(320, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_caj7e"]
+atlas = ExtResource("4_opval")
+region = Rect2(400, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c1pei"]
+atlas = ExtResource("4_opval")
+region = Rect2(480, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6cya4"]
+atlas = ExtResource("4_opval")
+region = Rect2(560, 0, 80, 80)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_26s55"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7xld5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_knfbi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ahcd2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p2s4c")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2x7ar")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ovdge")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c4try")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pxt5a")
+}],
+"loop": true,
+"name": &"attacking",
+"speed": 18.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_quxxr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yt10x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_80rjy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6audn")
+}],
+"loop": true,
+"name": &"default",
+"speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s85xy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_urlns")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dqwvv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ufstm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_quxm7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lhn3d")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o1ms3")
+}],
+"loop": true,
+"name": &"jumping",
+"speed": 7.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4fhld")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l8noa")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ehee4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c6tsv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0082h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_caj7e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c1pei")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6cya4")
+}],
+"loop": true,
+"name": &"running",
+"speed": 12.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_22agc"]
+size = Vector2(44, 76)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ppbm1"]
+radius = 47.0106
+
+[node name="CharacterBody2D" type="CharacterBody2D"]
+position = Vector2(354, 287)
+collision_mask = 11
+script = SubResource("GDScript_jxch0")
+
+[node name="Sprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(8.25002, 307)
+scale = Vector2(1.52344, 1.55)
+sprite_frames = SubResource("SpriteFrames_26s55")
+animation = &"attacking"
+autoplay = "default"
+frame = 1
+frame_progress = 0.596322
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(12, 308)
+shape = SubResource("RectangleShape2D_22agc")
+
+[node name="AttackArea" type="Area2D" parent="."]
+position = Vector2(45, 173)
+collision_layer = 264
+collision_mask = 6
+monitorable = false
+script = ExtResource("6_6set6")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+position = Vector2(-24, 111)
+shape = SubResource("CircleShape2D_ppbm1")
+disabled = true
+debug_color = Color(0.993072, 0.0142884, 0.220967, 0.42)
